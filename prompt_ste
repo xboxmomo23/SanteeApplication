@@ -1,0 +1,54 @@
+Prompt 1 : Le Backend - Modèle de données & Héritage
+Objectif : Créer le cœur du projet avec la logique POO.
+
+"Agis en tant qu'expert Java Spring Boot. Je crée un MVP de transport médical nommé 'HealDrive'.
+Génère les entités JPA pour PostgreSQL en utilisant l'héritage (stratégie InheritanceType.JOINED).
+
+Une classe parente @Entity abstraite Transporteur (id, nom, immatriculation, latitude, longitude, disponible).
+
+Deux classes enfants : AmbulanceSAMU (avec boolean equipeReanimation) et TaxiConventionne (avec String numAgrement).
+
+Une classe parente abstraite Paiement (id, montant, date) avec une méthode polymorphe processPayment().
+
+Deux classes enfants : BonTransport (numéro de bon) et PaiementDigital (transactionId).
+
+Une entité Trajet pour lier un Patient à un Transporteur.
+Utilise Lombok pour les Getters/Setters."
+
+Prompt 2 : Le Backend - Logique Métier & API
+Objectif : Créer les services et les contrôleurs.
+
+"Maintenant, crée les JpaRepository pour toutes les entités.
+Ensuite, crée un TrajetService qui contient la logique pour :
+
+Rechercher les transporteurs disponibles.
+
+Calculer le prix du trajet (Polymorphisme : le calcul diffère si c'est une Ambulance ou un Taxi).
+Enfin, crée un TrajetController avec des points d'entrée (Endpoints) REST pour :
+
+POST /api/trajets/demander (créer un trajet).
+
+GET /api/transporteurs/disponibles (liste des chauffeurs).
+
+PUT /api/trajets/{id}/statut (pour changer l'état du trajet)."
+
+Prompt 3 : Le Frontend - Setup & Service API
+Objectif : Connecter React au Backend.
+
+"Agis en tant qu'expert React. Configure un service API avec fetch pour communiquer avec mon backend Spring Boot (qui tourne sur localhost:8080).
+Crée des fonctions pour :
+
+getDisponibilites() : récupérer les transporteurs sur la carte.
+
+createTrajet(donnees) : envoyer une nouvelle demande.
+Ajoute la configuration CORS nécessaire côté Spring Boot pour autoriser le port 5173 de Vite."
+
+Prompt 4 : Le Frontend - Interfaces Utilisateurs
+Objectif : Créer les composants visuels avec Tailwind CSS.
+
+"Crée deux composants React principaux avec Tailwind CSS :
+
+PatientDashboard : Un formulaire de demande de trajet où l'utilisateur choisit son type de transport (Ambulance/Taxi) et son mode de paiement. Si 'Bon de transport' est choisi, affiche un champ pour le numéro d'agrément.
+
+LivreurView : Une liste de 'Cartes' affichant les demandes de trajets en attente avec un bouton 'Accepter'.
+Simule une carte avec une zone grise et des marqueurs pour le moment."
