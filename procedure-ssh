@@ -1,123 +1,89 @@
-📘 Guide – Utiliser GitHub avec clé SSH sous Ubuntu
-1️⃣ Vérifier si Git est installé
-git --version
+🔐 Utiliser GitHub avec clé SSH (Ubuntu)
 
-Si non installé :
+Ce guide explique :
 
-sudo apt update
-sudo apt install git -y
-2️⃣ Configurer ton identité Git (une seule fois par machine)
-git config --global user.name "Ton Nom"
-git config --global user.email "ton.email@example.com"
+Créer une clé SSH
 
-Vérifier :
+L’ajouter sur GitHub
 
-git config --list
-3️⃣ Créer une clé SSH sur Ubuntu
+Se connecter et cloner un projet
 
-Sur chaque PC, il faut générer sa propre clé.
+1️⃣ Créer une clé SSH (à faire une seule fois par PC)
 
-ssh-keygen -t ed25519 -C "ton.email@example.com"
+Ouvre un terminal :
 
-Quand il demande :
+ssh-keygen -t ed25519 -C "ton_email@example.com"
 
-Enter file in which to save the key:
+Appuie sur Entrée quand il demande le chemin.
 
-Appuie simplement sur Entrée (chemin par défaut).
+Appuie encore sur Entrée si tu ne veux pas de mot de passe.
 
-Tu peux mettre une passphrase (recommandé) ou laisser vide.
+La clé est créée dans :
 
-La clé sera créée dans :
-
-~/.ssh/
-
-Tu obtiens :
-
-id_ed25519 → clé privée (⚠️ ne jamais partager)
-
-id_ed25519.pub → clé publique (à mettre sur GitHub)
-
-4️⃣ Démarrer l’agent SSH
+~/.ssh/id_ed25519
+2️⃣ Ajouter la clé à l’agent SSH
 eval "$(ssh-agent -s)"
-
-Ajouter la clé :
-
 ssh-add ~/.ssh/id_ed25519
-5️⃣ Copier la clé publique
+3️⃣ Copier la clé publique
 
 Afficher la clé :
 
 cat ~/.ssh/id_ed25519.pub
 
-Copier tout le contenu.
+Copie tout le texte affiché.
 
-6️⃣ Ajouter la clé sur GitHub
+4️⃣ Ajouter la clé sur GitHub
 
-Aller dans GitHub
+Connecte-toi sur GitHub
 
-Settings
+Va dans Settings
 
-SSH and GPG keys
+Clique sur SSH and GPG keys
 
-New SSH key
+Clique sur New SSH key
 
-Coller la clé
+Colle la clé
 
-Enregistrer
+Save
 
-7️⃣ Tester la connexion SSH
+5️⃣ Tester la connexion
+
+Dans le terminal :
+
 ssh -T git@github.com
 
-Si tout fonctionne :
+Si tout est bon, tu verras :
 
 Hi username! You've successfully authenticated.
-8️⃣ Cloner un projet avec SSH
+6️⃣ Cloner un projet avec SSH
 
-Sur la page du repo GitHub :
+Sur GitHub :
 
-Cliquer sur Code → SSH
+Clique sur Code → SSH
 
-Copier l’URL :
+Copie l’URL qui ressemble à :
 
-git clone git@github.com:username/nom-du-repo.git
-9️⃣ Déposer un projet sur GitHub (nouveau projet)
+git@github.com:username/projet.git
 
-Dans ton dossier projet :
+Puis dans le terminal :
 
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin git@github.com:username/nom-du-repo.git
-git push -u origin main
-🔟 Workflow de travail en équipe
+git clone git@github.com:username/projet.git
+7️⃣ Se reconnecter plus tard
 
-Chaque membre :
+Normalement tu n’as rien à refaire.
 
-git pull
+Si jamais ça ne marche pas :
 
-Puis travaille.
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
 
-Pour envoyer ses modifications :
+Puis :
 
-git add .
-git commit -m "Description des modifications"
-git push
-⚠️ Règles importantes
+ssh -T git@github.com
+⚠️ Important
 
-Ne jamais partager la clé privée (~/.ssh/id_ed25519)
+Ne partage jamais le fichier :
 
-Chaque PC doit avoir sa propre clé
+~/.ssh/id_ed25519
 
-Toujours faire git pull avant de travailler
-
-Écrire des messages de commit clairs
-
-🎯 Pour votre projet Docker
-
-Workflow recommandé :
-
-git clone ...
-docker compose up --build
-
-Tout le monde a le même environnement.
+Seul le fichier .pub est public.
