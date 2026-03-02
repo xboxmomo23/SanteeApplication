@@ -1,0 +1,123 @@
+📘 Guide – Utiliser GitHub avec clé SSH sous Ubuntu
+1️⃣ Vérifier si Git est installé
+git --version
+
+Si non installé :
+
+sudo apt update
+sudo apt install git -y
+2️⃣ Configurer ton identité Git (une seule fois par machine)
+git config --global user.name "Ton Nom"
+git config --global user.email "ton.email@example.com"
+
+Vérifier :
+
+git config --list
+3️⃣ Créer une clé SSH sur Ubuntu
+
+Sur chaque PC, il faut générer sa propre clé.
+
+ssh-keygen -t ed25519 -C "ton.email@example.com"
+
+Quand il demande :
+
+Enter file in which to save the key:
+
+Appuie simplement sur Entrée (chemin par défaut).
+
+Tu peux mettre une passphrase (recommandé) ou laisser vide.
+
+La clé sera créée dans :
+
+~/.ssh/
+
+Tu obtiens :
+
+id_ed25519 → clé privée (⚠️ ne jamais partager)
+
+id_ed25519.pub → clé publique (à mettre sur GitHub)
+
+4️⃣ Démarrer l’agent SSH
+eval "$(ssh-agent -s)"
+
+Ajouter la clé :
+
+ssh-add ~/.ssh/id_ed25519
+5️⃣ Copier la clé publique
+
+Afficher la clé :
+
+cat ~/.ssh/id_ed25519.pub
+
+Copier tout le contenu.
+
+6️⃣ Ajouter la clé sur GitHub
+
+Aller dans GitHub
+
+Settings
+
+SSH and GPG keys
+
+New SSH key
+
+Coller la clé
+
+Enregistrer
+
+7️⃣ Tester la connexion SSH
+ssh -T git@github.com
+
+Si tout fonctionne :
+
+Hi username! You've successfully authenticated.
+8️⃣ Cloner un projet avec SSH
+
+Sur la page du repo GitHub :
+
+Cliquer sur Code → SSH
+
+Copier l’URL :
+
+git clone git@github.com:username/nom-du-repo.git
+9️⃣ Déposer un projet sur GitHub (nouveau projet)
+
+Dans ton dossier projet :
+
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin git@github.com:username/nom-du-repo.git
+git push -u origin main
+🔟 Workflow de travail en équipe
+
+Chaque membre :
+
+git pull
+
+Puis travaille.
+
+Pour envoyer ses modifications :
+
+git add .
+git commit -m "Description des modifications"
+git push
+⚠️ Règles importantes
+
+Ne jamais partager la clé privée (~/.ssh/id_ed25519)
+
+Chaque PC doit avoir sa propre clé
+
+Toujours faire git pull avant de travailler
+
+Écrire des messages de commit clairs
+
+🎯 Pour votre projet Docker
+
+Workflow recommandé :
+
+git clone ...
+docker compose up --build
+
+Tout le monde a le même environnement.
