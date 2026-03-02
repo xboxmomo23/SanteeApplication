@@ -1,0 +1,69 @@
+Étude de Projet : HealDrive (Transport Médical Connecté)
+1. Contexte et Vision
+Problématique : En Algérie comme en France, l'accès aux soins est souvent freiné par l'absence de solutions de transport adaptées. Les patients (personnes âgées, femmes sans permis, personnes en rééducation) perdent un temps précieux à coordonner leurs déplacements vers les hôpitaux ou les cabinets de kinésithérapie.
+
+Solution : Une plateforme de mise en relation en temps réel entre :
+
+Les Patients : Qui ont besoin d'un trajet médicalisé ou conventionné.
+
+Les Transporteurs : Taxis conventionnés (agréés par la sécurité sociale/CNAS) et ambulances (SAMU/Privées).
+
+Le Service : Géolocalisation, gestion des disponibilités et surtout, intégration du paiement par Bons de Transport (papier numérisé) ou Paiement Digital.
+
+2. Architecture Technique (Critères de Validation)
+Backend : Spring Boot 3 (Java), API REST.
+
+Frontend : React avec Tailwind CSS.
+
+Base de Données : PostgreSQL (Gestion des relations complexes).
+
+Principes POO : Utilisation obligatoire de l'Héritage et du Polymorphisme.
+
+3. Schéma de la Base de Données (UML)
+L'architecture repose sur deux piliers d'héritage pour maximiser la réutilisation du code et la propreté de la base de données.
+
+A. Entités Utilisateurs
+Utilisateur (Table Unique) : id, nom, prenom, email, mot_de_passe, role (PATIENT, CHAUFFEUR, ADMIN).
+
+B. Hiérarchie des Transporteurs (Stratégie : JOINED)
+Transporteur (Classe Abstraite) : id, immatriculation, latitude, longitude, est_disponible.
+
+AmbulanceSAMU (Enfant) : has_reanimation_kit (Boolean), type_urgence (A ou B).
+
+TaxiConventionne (Enfant) : num_agrement_cnas, is_pmr_compatible (Accès handicapé).
+
+C. Hiérarchie des Paiements (Stratégie : TABLE_PER_CLASS)
+Paiement (Classe Abstraite) : id, montant, date_validation.
+
+Méthode Polymorphe : effectuerValidation().
+
+BonTransport (Enfant) : code_barre_bon, etablissement_emetteur.
+
+PaiementDigital (Enfant) : transaction_id, provider (Apple Pay, Stripe).
+
+D. Gestion des Trajets
+Trajet : id, patient_id (FK), chauffeur_id (FK), point_depart, point_arrivee, statut (DEMANDE, ACCEPTE, TERMINE).
+
+4. Analyse des Pages du MVP (Frontend)
+Landing & Auth : Connexion sécurisée.
+
+Dashboard Patient : * Saisie du trajet.
+
+Sélection du type de transporteur (Le système filtre les transporteurs par type grâce au polymorphisme).
+
+Choix du mode de paiement.
+
+Dashboard Chauffeur : * Visualisation des demandes à proximité.
+
+Acceptation d'une course et mise à jour de la disponibilité.
+
+5. Instructions pour l'Analyse et l'Amélioration (À donner à l'IA)
+"Analyse le projet 'HealDrive' ci-dessus. Je dois réaliser ce MVP en 5 jours.
+
+Propose des optimisations pour le Polymorphisme : comment la méthode calculerPrix() peut-elle varier intelligemment entre une Ambulance (tarif forfaitaire d'urgence) et un Taxi (tarif au km) ?
+
+Propose une structure de Repository Spring Data JPA qui permet de récupérer uniquement les transporteurs disponibles dans un rayon de 5km (simulation de requête spatiale).
+
+Suggère une méthode simple pour gérer les Bons de Transport (vérification de format de numéro) pour que le projet paraisse professionnel lors de la présentation.
+
+Vérifie si l'utilisation de PostgreSQL avec la stratégie d'héritage JOINED est la plus performante pour ce cas précis ou s'il existe une alternative plus simple pour un projet de 5 jours."
