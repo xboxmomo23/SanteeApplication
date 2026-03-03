@@ -2,6 +2,7 @@ package com.healdrive.controller;
 
 import com.healdrive.dto.LoginRequest;
 import com.healdrive.dto.LoginResponse;
+import com.healdrive.dto.RegisterRequest;
 import com.healdrive.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -27,6 +28,20 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
+        }
+    }
+
+    /**
+     * POST /api/auth/register
+     * Body : { "nom", "prenom", "email", "mot_de_passe", "role", "telephone" }
+     */
+    @PostMapping("/register")
+    public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest request) {
+        try {
+            LoginResponse response = authService.register(request);
+            return ResponseEntity.status(201).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

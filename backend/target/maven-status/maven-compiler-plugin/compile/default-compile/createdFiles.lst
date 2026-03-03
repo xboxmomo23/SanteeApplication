@@ -38,6 +38,7 @@ com/healdrive/model/Trajet.class
 com/healdrive/model/Vehicule.class
 com/healdrive/service/TrajetService.class
 com/healdrive/model/Prescription$PrescriptionBuilder.class
+com/healdrive/dto/RegisterRequest.class
 com/healdrive/model/Prescription.class
 com/healdrive/dto/MessageResponse$MessageResponseBuilder.class
 com/healdrive/dto/LoginResponse.class

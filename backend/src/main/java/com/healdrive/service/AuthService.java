@@ -2,6 +2,7 @@ package com.healdrive.service;
 
 import com.healdrive.dto.LoginRequest;
 import com.healdrive.dto.LoginResponse;
+import com.healdrive.dto.RegisterRequest;
 import com.healdrive.model.Utilisateur;
 import com.healdrive.model.enums.RoleUtilisateur;
 import com.healdrive.repository.ProfilChauffeurRepository;
@@ -10,6 +11,7 @@ import com.healdrive.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -53,6 +55,40 @@ public class AuthService {
                 .telephone(user.getTelephone())
                 .role(user.getRole().name())
                 .profilId(profilId)
+                .build();
+    }
+
+    /**
+     * Inscription utilisateur.
+     */
+    public LoginResponse register(RegisterRequest request) {
+        if (utilisateurRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Un compte existe deja avec cet email.");
+        }
+
+        RoleUtilisateur role = RoleUtilisateur.valueOf(request.getRole().trim().toUpperCase(Locale.ROOT));
+
+        Utilisateur user = Utilisateur.builder()
+                .id(UUID.randomUUID())
+                .email(request.getEmail().trim())
+                .motDePasse(request.getMotDePasse())
+                .nom(request.getNom().trim())
+                .prenom(request.getPrenom().trim())
+                .telephone(request.getTelephone())
+                .role(role)
+                .actif(true)
+                .build();
+
+        Utilisateur saved = utilisateurRepository.save(user);
+
+        return LoginResponse.builder()
+                .id(saved.getId())
+                .email(saved.getEmail())
+                .nom(saved.getNom())
+                .prenom(saved.getPrenom())
+                .telephone(saved.getTelephone())
+                .role(saved.getRole().name())
+                .profilId(null)
                 .build();
     }
 

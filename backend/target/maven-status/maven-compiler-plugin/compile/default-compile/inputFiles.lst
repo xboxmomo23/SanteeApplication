@@ -13,6 +13,7 @@
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/model/enums/TypeVehicule.java
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/model/Message.java
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/service/TrajetService.java
+/home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/dto/RegisterRequest.java
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/controller/AuthController.java
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/model/enums/RoleUtilisateur.java
 /home/nadir/SanteeApplication/backend/src/main/java/com/healdrive/repository/MessageRepository.java
