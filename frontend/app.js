@@ -333,6 +333,27 @@ async function login(email, motDePasse, role) {
     }
 }
 
+async function sInscrire(userData) {
+    try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+            throw new Error("Impossible de créer le compte.");
+        }
+
+        const data = await response.json();
+        toast('Inscription réussie. Vous pouvez maintenant vous connecter.', 'success');
+        return data;
+    } catch (error) {
+        toast(error.message || "Erreur serveur lors de l'inscription.", 'error');
+        throw error;
+    }
+}
+
 async function chargerTrajetsPatient(id) {
     try {
         if (!id) {
@@ -689,6 +710,26 @@ function renderLogin(container) {
             <button id="btn-login" class="btn-primary w-full text-base">
                 <i data-lucide="log-in" class="w-5 h-5"></i> Se connecter
             </button>
+
+            <div class="my-5 border-t border-gray-100"></div>
+
+            <p class="input-label text-center mb-3">Pas encore de compte ?</p>
+            <div class="mb-3">
+                <label class="input-label" for="register-nom">Nom complet</label>
+                <input class="input-field" type="text" id="register-nom" placeholder="Ex: Marie Dupont">
+            </div>
+            <div class="mb-3">
+                <label class="input-label" for="register-email">Email</label>
+                <input class="input-field" type="email" id="register-email" placeholder="exemple@email.com">
+            </div>
+            <div class="mb-4">
+                <label class="input-label" for="register-password">Mot de passe</label>
+                <input class="input-field" type="password" id="register-password" placeholder="••••••••">
+            </div>
+            <button id="btn-register" class="btn-ghost w-full text-base">
+                <i data-lucide="user-plus" class="w-5 h-5"></i> S'inscrire
+            </button>
+
             <p class="text-xs text-gray-400 text-center mt-5">MVP Demo — Données simulées</p>
         </div>
     </div>`;
@@ -696,6 +737,7 @@ function renderLogin(container) {
     // Role card toggle
     const roleCards = container.querySelectorAll('.role-card');
     const emailInput = container.querySelector('#login-email');
+    const loginPasswordInput = container.querySelector('#login-password');
 
     roleCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -711,7 +753,7 @@ function renderLogin(container) {
     container.querySelector('#btn-login').addEventListener('click', async () => {
         const role = container.querySelector('input[name="role"]:checked').value;
         const email = emailInput.value.trim();
-        const motDePasse = container.querySelector('#login-password').value;
+        const motDePasse = loginPasswordInput.value;
 
         if (!email) { toast('Veuillez saisir un email.', 'error'); return; }
         if (!motDePasse) { toast('Veuillez saisir un mot de passe.', 'error'); return; }
@@ -722,6 +764,26 @@ function renderLogin(container) {
             navigate(getDashboardRoute());
         } catch (error) {
             toast(error.message || 'Échec de la connexion.', 'error');
+        }
+    });
+
+    container.querySelector('#btn-register').addEventListener('click', async () => {
+        const role = container.querySelector('input[name="role"]:checked').value;
+        const nom = container.querySelector('#register-nom').value.trim();
+        const email = container.querySelector('#register-email').value.trim();
+        const motDePasse = container.querySelector('#register-password').value;
+
+        if (!nom || !email || !motDePasse) {
+            toast('Veuillez remplir tous les champs d’inscription.', 'error');
+            return;
+        }
+
+        try {
+            await sInscrire({ nom, email, motDePasse, role });
+            emailInput.value = email;
+            loginPasswordInput.value = motDePasse;
+        } catch (error) {
+            // toast deja gere dans sInscrire
         }
     });
 }
