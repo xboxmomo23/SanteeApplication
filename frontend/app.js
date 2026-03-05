@@ -631,6 +631,7 @@ async function creerDemande(payload) {
 const routes = {
     '/':                    renderLogin,
     '/login':               renderLogin,
+    '/admin-login':         renderAdminLogin,
     '/register':            renderRegister,
     '/dashboard':           renderPatientDashboard,
     '/new-request':         renderNewRequest,
@@ -661,12 +662,20 @@ function handleRoute() {
     const renderer = routes[path];
 
     // Auth guards
-    if (!AppState.currentUser && path !== '/' && path !== '/login' && path !== '/register') {
+    if (!AppState.currentUser && path === '/admin') {
+        navigate('/admin-login');
+        return;
+    }
+    if (!AppState.currentUser && path !== '/' && path !== '/login' && path !== '/admin-login' && path !== '/register') {
         navigate('/login');
         return;
     }
-    if (AppState.currentUser && (path === '/' || path === '/login' || path === '/register')) {
+    if (AppState.currentUser && (path === '/' || path === '/login' || path === '/admin-login' || path === '/register')) {
         navigate(getDashboardRoute());
+        return;
+    }
+    if (path === '/admin' && (!AppState.currentUser || AppState.currentUser.role !== 'ADMIN')) {
+        navigate('/admin-login');
         return;
     }
 
@@ -847,6 +856,61 @@ function renderLogin(container) {
             navigate(getDashboardRoute());
         } catch (error) {
             toast(error.message || 'Échec de la connexion.', 'error');
+        }
+    });
+}
+
+
+function renderAdminLogin(container) {
+    container.innerHTML = `
+    <div class="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-100">
+        <div class="w-full max-w-sm bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+            <div class="mb-6">
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Administration</p>
+                <h2 class="text-xl font-bold text-gray-800 mt-1">Connexion Admin</h2>
+                <p class="text-sm text-gray-500 mt-1">Accès réservé aux administrateurs HealDrive.</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="input-label" for="admin-login-email">Email</label>
+                <input class="input-field" type="email" id="admin-login-email" placeholder="admin@healdrive.fr">
+            </div>
+
+            <div class="mb-6">
+                <label class="input-label" for="admin-login-password">Mot de passe</label>
+                <input class="input-field" type="password" id="admin-login-password" placeholder="••••••••">
+            </div>
+
+            <button id="btn-admin-login" class="btn-primary w-full justify-center">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> Se connecter
+            </button>
+
+            <p class="text-xs text-gray-400 mt-4 text-center">
+                Retour utilisateur:
+                <a href="#/login" class="text-brand-600 font-medium hover:text-brand-800">connexion classique</a>
+            </p>
+        </div>
+    </div>`;
+
+    const emailInput = container.querySelector('#admin-login-email');
+    const passwordInput = container.querySelector('#admin-login-password');
+    const button = container.querySelector('#btn-admin-login');
+
+    button.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        const motDePasse = passwordInput.value;
+
+        if (!email || !motDePasse) {
+            toast('Veuillez saisir email et mot de passe.', 'error');
+            return;
+        }
+
+        try {
+            await login(email, motDePasse, 'ADMIN');
+            toast('Connexion administrateur réussie.', 'success');
+            navigate('/admin');
+        } catch (error) {
+            toast(error.message || 'Échec de la connexion administrateur.', 'error');
         }
     });
 }
@@ -2056,6 +2120,21 @@ async function chargerChauffeursEnAttente() {
     }
 }
 
+async function chargerTousTrajetsAdmin() {
+    try {
+        const url = `${API_URL}/admin/trajets/tous`;
+        console.log('[API] GET', url);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Impossible de charger les trajets.');
+        const data = await response.json();
+        return Array.isArray(data) ? data.map(mapTrajetFromApi) : [];
+    } catch (error) {
+        console.error('[API] ERROR', error);
+        toast(error.message || 'Erreur serveur.', 'error');
+        return [];
+    }
+}
+
 async function validerCompteChauffeur(userId) {
     try {
         const url = `${API_URL}/admin/chauffeurs/${userId}/valider`;
@@ -2092,7 +2171,7 @@ async function rejeterCompteChauffeur(userId) {
 function renderAdminDashboard(container) {
     if (!AppState.currentUser || AppState.currentUser.role !== 'ADMIN') {
         toast('Accès réservé aux administrateurs.', 'error');
-        navigate('/login');
+        navigate('/admin-login');
         return;
     }
 
@@ -2106,8 +2185,20 @@ function renderAdminDashboard(container) {
             </div>
         </div>
 
+        <!-- Navigation Admin -->
+        <div class="mb-6 anim-fade-up" style="animation-delay:.1s">
+            <div class="inline-flex rounded-xl border border-gray-200 bg-white p-1 gap-1">
+                <button class="btn-ghost text-xs py-2 px-3 admin-tab-btn" data-admin-tab="chauffeurs">
+                    <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Chauffeurs à valider
+                </button>
+                <button class="btn-ghost text-xs py-2 px-3 admin-tab-btn" data-admin-tab="transports">
+                    <i data-lucide="route" class="w-3.5 h-3.5"></i> Suivi des Transports
+                </button>
+            </div>
+        </div>
+
         <!-- Stats -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10 anim-fade-up" style="animation-delay:.1s">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 anim-fade-up" style="animation-delay:.15s">
             <div class="card-flat px-5 py-4 stat-accent-sand">
                 <div class="flex items-center gap-3 mb-2">
                     <i data-lucide="user-check" class="w-4 h-4 text-gray-400"></i>
@@ -2138,8 +2229,8 @@ function renderAdminDashboard(container) {
             </div>
         </div>
 
-        <!-- Pending Chauffeurs -->
-        <div class="anim-fade-up" style="animation-delay:.2s">
+        <!-- Tab: Chauffeurs -->
+        <div id="admin-tab-chauffeurs" class="anim-fade-up" style="animation-delay:.2s">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-semibold text-gray-800 text-[15px] flex items-center gap-2">
                     <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
@@ -2156,9 +2247,53 @@ function renderAdminDashboard(container) {
                 </div>
             </div>
         </div>
+
+        <!-- Tab: Transports -->
+        <div id="admin-tab-transports" class="hidden anim-fade-up" style="animation-delay:.2s">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-800 text-[15px] flex items-center gap-2">
+                    <i data-lucide="route" class="w-4 h-4 text-brand-500"></i>
+                    Suivi des transports
+                </h3>
+                <button class="btn-ghost text-xs" onclick="loadAdminTransportData()">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Actualiser
+                </button>
+            </div>
+            <div id="admin-transport-list">
+                <div class="card-flat p-8 text-center text-gray-400 text-sm">
+                    <i data-lucide="loader" class="w-6 h-6 mx-auto mb-2 animate-spin opacity-40"></i>
+                    Chargement...
+                </div>
+            </div>
+        </div>
     </div>`;
 
-    loadAdminData();
+    const tabButtons = container.querySelectorAll('.admin-tab-btn');
+    const chauffeursTab = container.querySelector('#admin-tab-chauffeurs');
+    const transportsTab = container.querySelector('#admin-tab-transports');
+
+    function setAdminTab(tabName) {
+        tabButtons.forEach(btn => {
+            const isActive = btn.dataset.adminTab === tabName;
+            btn.classList.toggle('bg-brand-600', isActive);
+            btn.classList.toggle('text-white', isActive);
+            btn.classList.toggle('border-brand-600', isActive);
+        });
+        chauffeursTab.classList.toggle('hidden', tabName !== 'chauffeurs');
+        transportsTab.classList.toggle('hidden', tabName !== 'transports');
+
+        if (tabName === 'chauffeurs') {
+            loadAdminData();
+        } else {
+            loadAdminTransportData();
+        }
+    }
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => setAdminTab(btn.dataset.adminTab));
+    });
+
+    setAdminTab('chauffeurs');
 }
 
 async function loadAdminData() {
@@ -2188,13 +2323,62 @@ async function loadAdminData() {
     }
 }
 
+async function loadAdminTransportData() {
+    const listEl = document.getElementById('admin-transport-list');
+    if (!listEl) return;
+
+    try {
+        const trajets = await chargerTousTrajetsAdmin();
+        const trajetsCount = document.getElementById('admin-count-trajets');
+        if (trajetsCount) trajetsCount.textContent = String(trajets.length);
+
+        if (trajets.length === 0) {
+            listEl.innerHTML = `
+                <div class="card-flat">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i data-lucide="route-off" class="w-7 h-7 text-brand-300"></i></div>
+                        <p class="text-gray-400 text-sm">Aucun transport trouvé.</p>
+                    </div>
+                </div>`;
+        } else {
+            listEl.innerHTML = `<div class="grid gap-3">${trajets.map(t => adminTrajetRow(t)).join('')}</div>`;
+        }
+        refreshIcons();
+    } catch (error) {
+        listEl.innerHTML = `<div class="card-flat p-6 text-coral-500 text-sm text-center">Erreur de chargement des trajets.</div>`;
+    }
+}
+
+function adminTrajetRow(t) {
+    const stat = STATUT_LABELS[t.statut] || { label: t.statut || 'Inconnu', badge: 'badge-waiting' };
+    const patientNom = t.patient_nom || 'Patient inconnu';
+    const chauffeurNom = t.chauffeur_nom || 'Non assigné';
+
+    return `
+    <div class="card-flat p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                    <span class="badge ${stat.badge}">${stat.label}</span>
+                    <span class="text-xs text-gray-400">${t.date ? formatDate(t.date) : 'Date N/A'} ${t.heure ? '· ' + t.heure : ''}</span>
+                </div>
+                <p class="text-sm text-gray-800 font-semibold truncate">${t.depart} → ${t.destination}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                    Patient: <span class="font-medium text-gray-700">${patientNom}</span>
+                    · Chauffeur: <span class="font-medium text-gray-700">${chauffeurNom}</span>
+                </p>
+            </div>
+        </div>
+    </div>`;
+}
+
 function adminChauffeurCard(c) {
     const nom = [c.prenom, c.nom].filter(Boolean).join(' ') || c.email;
     const docs = [
-        { label: 'Permis', key: 'fichierPermis', icon: 'id-card' },
-        { label: 'Carte ID', key: 'fichierIdentite', icon: 'credit-card' },
-        { label: 'Assurance', key: 'fichierAssurance', icon: 'file-shield' },
-        { label: 'Carte grise', key: 'fichierCarteGrise', icon: 'car' },
+        { label: 'Permis', key: 'fichierPermis', icon: 'id-card', docType: 'permis' },
+        { label: 'Carte ID', key: 'fichierIdentite', icon: 'credit-card', docType: 'identite' },
+        { label: 'Assurance', key: 'fichierAssurance', icon: 'file-shield', docType: 'assurance' },
+        { label: 'Carte grise', key: 'fichierCarteGrise', icon: 'car', docType: 'carte-grise' },
     ];
 
     return `
@@ -2214,11 +2398,16 @@ function adminChauffeurCard(c) {
 
                 <div class="grid grid-cols-2 gap-2 mt-3">
                     ${docs.map(d => `
-                    <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 text-xs">
+                    <a
+                        href="${API_URL}/admin/documents/${c.id}/${d.docType}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 text-xs ${c[d.key] ? 'hover:bg-brand-50 transition-colors' : 'opacity-60 pointer-events-none'}"
+                    >
                         <i data-lucide="${d.icon}" class="w-3.5 h-3.5 ${c[d.key] ? 'text-mint-500' : 'text-gray-300'}"></i>
                         <span class="${c[d.key] ? 'text-gray-700 font-medium' : 'text-gray-400'}">${d.label}</span>
-                        ${c[d.key] ? '<i data-lucide="check" class="w-3 h-3 text-mint-500 ml-auto"></i>' : '<i data-lucide="x" class="w-3 h-3 text-gray-300 ml-auto"></i>'}
-                    </div>`).join('')}
+                        <i data-lucide="${c[d.key] ? 'eye' : 'external-link'}" class="w-3 h-3 ${c[d.key] ? 'text-brand-600' : 'text-gray-300'} ml-auto"></i>
+                    </a>`).join('')}
                 </div>
 
                 ${c.anneesExperience ? `

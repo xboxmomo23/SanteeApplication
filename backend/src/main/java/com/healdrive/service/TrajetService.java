@@ -12,6 +12,7 @@ import com.healdrive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -85,6 +86,16 @@ public class TrajetService {
         Trajet trajet = trajetRepository.findById(trajetId)
                 .orElseThrow(() -> new RuntimeException("Trajet introuvable : " + trajetId));
         return toResponse(trajet);
+    }
+
+    /**
+     * Tous les trajets pour la vue admin.
+     */
+    public List<TrajetResponse> getTousTrajetsAdmin() {
+        return trajetRepository.findAll(Sort.by(Sort.Direction.DESC, "dateCreation"))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     /**
