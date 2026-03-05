@@ -2402,11 +2402,11 @@ function adminChauffeurCard(c) {
                         href="${API_URL}/admin/documents/${c.id}/${d.docType}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 text-xs ${c[d.key] ? 'hover:bg-brand-50 transition-colors' : 'opacity-60 pointer-events-none'}"
+                        class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 text-xs hover:bg-brand-50 transition-colors"
                     >
                         <i data-lucide="${d.icon}" class="w-3.5 h-3.5 ${c[d.key] ? 'text-mint-500' : 'text-gray-300'}"></i>
-                        <span class="${c[d.key] ? 'text-gray-700 font-medium' : 'text-gray-400'}">${d.label}</span>
-                        <i data-lucide="${c[d.key] ? 'eye' : 'external-link'}" class="w-3 h-3 ${c[d.key] ? 'text-brand-600' : 'text-gray-300'} ml-auto"></i>
+                        <span class="${c[d.key] ? 'text-gray-700 font-medium' : 'text-gray-500'}">${d.label}</span>
+                        <i data-lucide="eye" class="w-3 h-3 text-brand-600 ml-auto"></i>
                     </a>`).join('')}
                 </div>
 

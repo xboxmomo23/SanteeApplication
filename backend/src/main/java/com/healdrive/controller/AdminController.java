@@ -6,6 +6,7 @@ import com.healdrive.model.enums.RoleUtilisateur;
 import com.healdrive.repository.UtilisateurRepository;
 import com.healdrive.service.EmailService;
 import com.healdrive.service.TrajetService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +38,18 @@ public class AdminController {
     private final TrajetService trajetService;
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
+
+    @PostConstruct
+    public void ensureUploadDirectories() {
+        for (Path root : resolveUploadRoots()) {
+            try {
+                Files.createDirectories(root);
+                System.out.println("Dossier uploads prêt : " + root.toAbsolutePath().normalize());
+            } catch (IOException e) {
+                System.out.println("Impossible de créer le dossier uploads : " + root.toAbsolutePath().normalize());
+            }
+        }
+    }
 
     @GetMapping("/chauffeurs/en-attente")
     public ResponseEntity<List<Map<String, Object>>> getChauffeursEnAttente() {
@@ -131,31 +145,39 @@ public class AdminController {
             case "identite" -> "identite";
             case "assurance" -> "assurance";
             case "carte-grise" -> "carte-grise";
+            case "cartegrise" -> "carte-grise";
             default -> null;
         };
         if (baseName == null) {
             return Optional.empty();
         }
 
-        Path root = Paths.get(uploadDir);
-        Path userDir = root.resolve(userId.toString());
+        List<Path> roots = resolveUploadRoots();
         List<String> extensions = List.of("pdf", "jpg", "jpeg", "png");
 
-        for (String ext : extensions) {
-            Path nested = userDir.resolve(baseName + "." + ext);
-            if (Files.exists(nested)) return Optional.of(nested);
-        }
-        for (String ext : extensions) {
-            Path nestedUnderscore = userDir.resolve(baseName.replace("-", "_") + "." + ext);
-            if (Files.exists(nestedUnderscore)) return Optional.of(nestedUnderscore);
-        }
-        for (String ext : extensions) {
-            Path flat = root.resolve(userId + "_" + baseName + "." + ext);
-            if (Files.exists(flat)) return Optional.of(flat);
-        }
-        for (String ext : extensions) {
-            Path flatUnderscore = root.resolve(userId + "_" + baseName.replace("-", "_") + "." + ext);
-            if (Files.exists(flatUnderscore)) return Optional.of(flatUnderscore);
+        for (Path root : roots) {
+            Path userDir = root.resolve(userId.toString());
+
+            for (String ext : extensions) {
+                Path nested = userDir.resolve(baseName + "." + ext);
+                System.out.println("Recherche du fichier ici : " + nested.toAbsolutePath().normalize());
+                if (Files.exists(nested)) return Optional.of(nested);
+            }
+            for (String ext : extensions) {
+                Path nestedUnderscore = userDir.resolve(baseName.replace("-", "_") + "." + ext);
+                System.out.println("Recherche du fichier ici : " + nestedUnderscore.toAbsolutePath().normalize());
+                if (Files.exists(nestedUnderscore)) return Optional.of(nestedUnderscore);
+            }
+            for (String ext : extensions) {
+                Path flat = root.resolve(userId + "_" + baseName + "." + ext);
+                System.out.println("Recherche du fichier ici : " + flat.toAbsolutePath().normalize());
+                if (Files.exists(flat)) return Optional.of(flat);
+            }
+            for (String ext : extensions) {
+                Path flatUnderscore = root.resolve(userId + "_" + baseName.replace("-", "_") + "." + ext);
+                System.out.println("Recherche du fichier ici : " + flatUnderscore.toAbsolutePath().normalize());
+                if (Files.exists(flatUnderscore)) return Optional.of(flatUnderscore);
+            }
         }
 
         return Optional.empty();
@@ -180,5 +202,22 @@ public class AdminController {
         if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
         if (name.endsWith(".png")) return "image/png";
         return "application/octet-stream";
+    }
+
+    private List<Path> resolveUploadRoots() {
+        Path configured = Paths.get(uploadDir);
+        Path configuredAbsolute = configured.isAbsolute()
+                ? configured
+                : Paths.get("").toAbsolutePath().resolve(configured).normalize();
+
+        Path projectRootGuess = Paths.get("").toAbsolutePath().getParent();
+        Path projectRootUploads = projectRootGuess != null
+                ? projectRootGuess.resolve(uploadDir).normalize()
+                : configuredAbsolute;
+
+        if (projectRootUploads.equals(configuredAbsolute)) {
+            return List.of(configuredAbsolute);
+        }
+        return List.of(configuredAbsolute, projectRootUploads);
     }
 }
