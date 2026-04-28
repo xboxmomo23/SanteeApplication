@@ -2,7 +2,7 @@ Voici le document réécrit en version "travail d'équipe", avec un ton collabor
 
 ---
 
-# 🩺 HealDrive — Guide de mise en place (Équipe)
+#  HealDrive — Guide de mise en place (Équipe)
 
 ## Application de santé MVP
 
@@ -46,7 +46,7 @@ CREATE DATABASE healdrive;
 \q
 ```
 
-> ⚠️ **Note d'équipe :** Le mot de passe que vous choisissez est **local à votre machine**. Il ne sera jamais poussé sur GitHub — chacun définit le sien librement.
+>  **Note d'équipe :** Le mot de passe que vous choisissez est **local à votre machine**. Il ne sera jamais poussé sur GitHub — chacun définit le sien librement.
 
 ---
 
@@ -87,7 +87,7 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.main.allow-bean-definition-overriding=true
 ```
 
-> ⚠️ **Important :** Ce fichier contient votre mot de passe personnel. **Il ne doit pas être commité sur GitHub.** Vérifiez qu'il est bien listé dans le `.gitignore`.
+>  **Important :** Ce fichier contient votre mot de passe personnel. **Il ne doit pas être commité sur GitHub.** Vérifiez qu'il est bien listé dans le `.gitignore`.
 
 ---
 
@@ -100,7 +100,7 @@ Voici la procédure que l'équipe suit ensemble, étape par étape :
 | **1. Initialisation** | **Lead** | Crée le projet sur [start.spring.io](https://start.spring.io) et le pousse sur GitHub |
 | **2. Génération du code** | **Claude** | Génère les entités, services et contrôleurs Spring Boot |
 | **3. Correction syntaxique** | **Codex** | Si VS Code affiche des soulignements rouges, sélectionner le code et demander : *"Fix the syntax errors in this Spring Boot entity for PostgreSQL"* |
-| **4. Test collectif** | **Toute l'équipe** | Lancer `./mvnw spring-boot:run` — succès si la console affiche `Started HealDriveApplication` ✅ |
+| **4. Test collectif** | **Toute l'équipe** | Lancer `./mvnw spring-boot:run` — succès si la console affiche `Started HealDriveApplication`  |
 
 ---
 
