@@ -1,0 +1,45 @@
+CONNEXION - APPLICATION SANTEE (DOCKER)
+
+1) URLS A UTILISER
+- Frontend (site): http://localhost:8080
+- Backend (API): http://localhost:8081/api
+
+2) LANCER L'APPLICATION AVEC DOCKER
+Depuis la racine du projet (dossier SanteeApplication):
+
+docker compose up --build -d
+
+Verifier que les conteneurs tournent:
+
+docker compose ps
+
+Voir les logs:
+
+docker compose logs -f
+
+3) ARRETER L'APPLICATION
+
+docker compose down
+
+4) REDEMARRER L'APPLICATION
+
+docker compose restart
+
+Redemarrage complet avec rebuild:
+
+docker compose down
+docker compose up --build -d
+
+5) COMPTES DE TEST
+- Compte patient
+  Email: patient@test.local
+  Mot de passe: Test1234!
+
+- Compte chauffeur
+  Email: chauffeur@test.local
+  Mot de passe: Test1234!
+
+6) EN CAS DE PROBLEME
+- Faire un refresh force du navigateur (Ctrl+F5).
+- Verifier l'etat des services avec: docker compose ps
+- Verifier les erreurs avec: docker compose logs -f
